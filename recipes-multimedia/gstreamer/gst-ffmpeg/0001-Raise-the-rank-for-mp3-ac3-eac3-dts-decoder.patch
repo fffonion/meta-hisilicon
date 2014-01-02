@@ -1,0 +1,34 @@
+From fbede2491329d0ab5557900ee01053f2042969c6 Mon Sep 17 00:00:00 2001
+From: Haifeng Yan <haifeng.yan@linaro.org>
+Date: Tue, 10 Sep 2013 10:13:56 +0800
+Subject: [PATCH] Raise the rank for mp3/ac3/eac3/dts decoder.
+
+---
+ ext/ffmpeg/gstffmpegdec.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/ffmpeg/gstffmpegdec.c b/ext/ffmpeg/gstffmpegdec.c
+index 2333c11..636736c 100644
+--- a/ext/ffmpeg/gstffmpegdec.c
++++ b/ext/ffmpeg/gstffmpegdec.c
+@@ -3043,7 +3043,7 @@ gst_ffmpegdec_register (GstPlugin * plugin)
+         rank = GST_RANK_SECONDARY;
+         break;
+       case CODEC_ID_MP3:
+-        rank = GST_RANK_NONE;
++        rank = GST_RANK_SECONDARY;
+         break;
+         /* TEMPORARILY DISABLING AC3/EAC3/DTS for 0.10.12 release
+          * due to downmixing failure.
+@@ -3051,7 +3051,7 @@ gst_ffmpegdec_register (GstPlugin * plugin)
+       case CODEC_ID_EAC3:
+       case CODEC_ID_AC3:
+       case CODEC_ID_DTS:
+-        rank = GST_RANK_NONE;
++        rank = GST_RANK_SECONDARY;
+         break;
+       default:
+         rank = GST_RANK_MARGINAL;
+-- 
+1.7.9.5
+

@@ -1,0 +1,84 @@
+From 7acde242de028216f5cc71d08db776046d2fa337 Mon Sep 17 00:00:00 2001
+From: Haifeng Yan <haifeng.yan@linaro.org>
+Date: Tue, 20 Aug 2013 14:45:48 +0800
+Subject: [PATCH 1/2] Add zero copy.
+
+---
+ omx/gstomx_base_filter.c |   45 +++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 39 insertions(+), 6 deletions(-)
+
+diff --git a/omx/gstomx_base_filter.c b/omx/gstomx_base_filter.c
+index 54f7036..f7de223 100644
+--- a/omx/gstomx_base_filter.c
++++ b/omx/gstomx_base_filter.c
+@@ -312,6 +312,24 @@ push_buffer (GstOmxBaseFilter * self, GstBuffer * buf)
+   return ret;
+ }
+ 
++struct vdec_priv_buf {
++         unsigned int bufferaddr;
++         unsigned int phyaddr;
++         unsigned int buffer_len;
++         unsigned int data_offset;
++         unsigned int data_len;
++
++         unsigned int timestamp;
++         unsigned int flags;
++
++         unsigned int bNativeBuffer;
++};
++
++static void hisi_omx_buf_release(void *data)
++{
++
++}
++
+ static void
+ output_loop (gpointer data)
+ {
+@@ -320,6 +338,7 @@ output_loop (gpointer data)
+   GOmxPort *out_port;
+   GstOmxBaseFilter *self;
+   GstFlowReturn ret = GST_FLOW_OK;
++  struct vdec_priv_buf * vdec_priv;
+ 
+   pad = data;
+   self = GST_OMX_BASE_FILTER (gst_pad_get_parent (pad));
+@@ -420,14 +439,28 @@ output_loop (gpointer data)
+         /* This is only meant for the first OpenMAX buffers,
+          * which need to be pre-allocated. */
+         /* Also for the very last one. */
+-        ret = gst_pad_alloc_buffer_and_set_caps (self->srcpad,
+-            GST_BUFFER_OFFSET_NONE,
+-            omx_buffer->nFilledLen, GST_PAD_CAPS (self->srcpad), &buf);
++		if (!self->out_port->omx_allocate) {
++            ret = gst_pad_alloc_buffer_and_set_caps (self->srcpad,
++                GST_BUFFER_OFFSET_NONE,
++                omx_buffer->nFilledLen, GST_PAD_CAPS (self->srcpad), &buf);
++		} else {
++    		buf = gst_buffer_new();
++    		gst_buffer_set_caps(buf, GST_PAD_CAPS (self->srcpad));
++		}
+ 
+         if (G_LIKELY (buf)) {
+-          memcpy (GST_BUFFER_DATA (buf),
+-              omx_buffer->pBuffer + omx_buffer->nOffset,
+-              omx_buffer->nFilledLen);
++            if (!self->out_port->omx_allocate) {
++                memcpy (GST_BUFFER_DATA (buf),
++                omx_buffer->pBuffer + omx_buffer->nOffset,
++                omx_buffer->nFilledLen);
++            } else {
++    			vdec_priv = (struct vdec_priv_buf *)(omx_buffer->pOutputPortPrivate);
++    			GST_BUFFER_DATA(buf) = omx_buffer->pBuffer;
++    			GST_BUFFER_MALLOCDATA(buf) = vdec_priv->phyaddr;
++    			GST_BUFFER_SIZE(buf) = omx_buffer->nFilledLen;
++    			GST_BUFFER_FREE_FUNC(buf) = hisi_omx_buf_release;
++			}
++
+           if (self->use_timestamps) {
+             GST_BUFFER_TIMESTAMP (buf) =
+                 gst_util_uint64_scale_int (omx_buffer->nTimeStamp, GST_SECOND,
+-- 
+1.7.9.5
+

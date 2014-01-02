@@ -1,0 +1,193 @@
+From 31c552711aa80310fcd8cb75b1e19690b8df31ea Mon Sep 17 00:00:00 2001
+From: Haifeng Yan <haifeng.yan@linaro.org>
+Date: Sat, 31 Aug 2013 17:38:58 +0800
+Subject: [PATCH 2/2] Add Mpeg2 dec support.
+
+---
+ omx/Makefile.am       |    1 +
+ omx/gstomx.c          |    2 ++
+ omx/gstomx_mpeg2dec.c |   84 +++++++++++++++++++++++++++++++++++++++++++++++++
+ omx/gstomx_mpeg2dec.h |   48 ++++++++++++++++++++++++++++
+ 4 files changed, 135 insertions(+)
+ create mode 100644 omx/gstomx_mpeg2dec.c
+ create mode 100644 omx/gstomx_mpeg2dec.h
+
+diff --git a/omx/Makefile.am b/omx/Makefile.am
+index 915b562..d6304ee 100644
+--- a/omx/Makefile.am
++++ b/omx/Makefile.am
+@@ -10,6 +10,7 @@ libgstomx_la_SOURCES = gstomx.c gstomx.h \
+ 		       gstomx_dummy.c gstomx_dummy.h \
+ 		       gstomx_volume.c gstomx_volume.h \
+ 		       gstomx_mpeg4dec.c gstomx_mpeg4dec.h \
++		       gstomx_mpeg2dec.c gstomx_mpeg2dec.h \
+ 		       gstomx_h263dec.c gstomx_h263dec.h \
+ 		       gstomx_h264dec.c gstomx_h264dec.h \
+ 		       gstomx_wmvdec.c gstomx_wmvdec.h \
+diff --git a/omx/gstomx.c b/omx/gstomx.c
+index 8b375c0..6c23e81 100644
+--- a/omx/gstomx.c
++++ b/omx/gstomx.c
+@@ -28,6 +28,7 @@
+ #include "gstomx.h"
+ #include "gstomx_dummy.h"
+ #include "gstomx_mpeg4dec.h"
++#include "gstomx_mpeg2dec.h"
+ #include "gstomx_h263dec.h"
+ #include "gstomx_h264dec.h"
+ #include "gstomx_wmvdec.h"
+@@ -71,6 +72,7 @@ extern const gchar *default_config;
+ static GType (*get_type[]) (void) = {
+   gst_omx_dummy_get_type,
+       gst_omx_mpeg4dec_get_type,
++      gst_omx_mpeg2dec_get_type,
+       gst_omx_h264dec_get_type,
+       gst_omx_h263dec_get_type,
+       gst_omx_wmvdec_get_type,
+diff --git a/omx/gstomx_mpeg2dec.c b/omx/gstomx_mpeg2dec.c
+new file mode 100644
+index 0000000..bbcc2c8
+--- /dev/null
++++ b/omx/gstomx_mpeg2dec.c
+@@ -0,0 +1,84 @@
++/*
++ * Copyright (C) 2007-2009 Nokia Corporation.
++ *
++ * Author: Felipe Contreras <felipe.contreras@nokia.com>
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation
++ * version 2.1 of the License.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ */
++
++#include "gstomx_mpeg2dec.h"
++#include "gstomx.h"
++
++GSTOMX_BOILERPLATE (GstOmxMpeg2Dec, gst_omx_mpeg2dec, GstOmxBaseVideoDec,
++    GST_OMX_BASE_VIDEODEC_TYPE);
++
++static GstCaps *
++generate_sink_template (void)
++{
++  GstCaps *caps;
++  GstStructure *struc;
++
++  caps = gst_caps_new_empty ();
++
++  struc = gst_structure_new ("video/mpeg",
++      "mpegversion", G_TYPE_INT, 2,
++      "systemstream", G_TYPE_BOOLEAN, FALSE,
++      "width", GST_TYPE_INT_RANGE, 16, 4096,
++      "height", GST_TYPE_INT_RANGE, 16, 4096,
++      "framerate", GST_TYPE_FRACTION_RANGE, 0, 1, G_MAXINT, 1, NULL);
++
++  gst_caps_append_structure (caps, struc);
++
++  return caps;
++}
++
++static void
++type_base_init (gpointer g_class)
++{
++  GstElementClass *element_class;
++
++  element_class = GST_ELEMENT_CLASS (g_class);
++
++  gst_element_class_set_details_simple (element_class,
++      "OpenMAX IL MPEG-2 video decoder",
++      "Codec/Decoder/Video",
++      "Decodes video in MPEG-2 format with OpenMAX IL", "Felipe Contreras");
++
++  {
++    GstPadTemplate *template;
++
++    template = gst_pad_template_new ("sink", GST_PAD_SINK,
++        GST_PAD_ALWAYS, generate_sink_template ());
++
++    gst_element_class_add_pad_template (element_class, template);
++  }
++}
++
++static void
++type_class_init (gpointer g_class, gpointer class_data)
++{
++}
++
++static void
++type_instance_init (GTypeInstance * instance, gpointer g_class)
++{
++  GstOmxBaseVideoDec *omx_base;
++
++  omx_base = GST_OMX_BASE_VIDEODEC (instance);
++
++  omx_base->compression_format = OMX_VIDEO_CodingMPEG2;
++}
++
+diff --git a/omx/gstomx_mpeg2dec.h b/omx/gstomx_mpeg2dec.h
+new file mode 100644
+index 0000000..b0581a3
+--- /dev/null
++++ b/omx/gstomx_mpeg2dec.h
+@@ -0,0 +1,48 @@
++/*
++ * Copyright (C) 2007-2009 Nokia Corporation.
++ *
++ * Author: Felipe Contreras <felipe.contreras@nokia.com>
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation
++ * version 2.1 of the License.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
++ *
++ */
++
++#ifndef GSTOMX_MPEG2DEC_H
++#define GSTOMX_MPEG2DEC_H
++
++#include <gst/gst.h>
++
++G_BEGIN_DECLS
++#define GST_OMX_MPEG2DEC(obj) (GstOmxMpeg2Dec *) (obj)
++#define GST_OMX_MPEG2DEC_TYPE (gst_omx_mpeg2dec_get_type ())
++typedef struct GstOmxMpeg2Dec GstOmxMpeg2Dec;
++typedef struct GstOmxMpeg2DecClass GstOmxMpeg2DecClass;
++
++#include "gstomx_base_videodec.h"
++
++struct GstOmxMpeg2Dec
++{
++  GstOmxBaseVideoDec omx_base;
++};
++
++struct GstOmxMpeg2DecClass
++{
++  GstOmxBaseVideoDecClass parent_class;
++};
++
++GType gst_omx_mpeg2dec_get_type (void);
++
++G_END_DECLS
++#endif /* GSTOMX_MPEG2DEC_H */
+-- 
+1.7.9.5
+

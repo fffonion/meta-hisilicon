@@ -1,0 +1,49 @@
+modprobe hi_media
+modprobe hi_mmz
+modprobe hi_common
+modprobe hi_gpio
+modprobe hi_i2c
+modprobe mali
+modprobe hi_pmoc
+modprobe hi_tde
+modprobe hi_otp
+modprobe hi_demux
+modprobe hi_adec
+modprobe hi_vfmw
+modprobe hi_pdm
+modprobe hi_pq
+modprobe hi_vpss
+modprobe hi_vdec
+modprobe hi_omxvdec
+modprobe hi_cipher
+modprobe hi_hdcp
+modprobe hi_hdmi
+modprobe hi_adsp
+modprobe hi_aiao
+modprobe hi_vou
+modprobe hi_sync
+modprobe hi_pvr
+modprobe hi_avplay
+modprobe hi_mce
+modprobe hi_tuner
+# About hi_fb:
+#  For 1920*1080, triple buffer, ARGB8888 format, use:
+#  modprobe hi_fb.ko video="hi_fb:vram0_size:16200, vram4_size:2430"
+#  For 1280*720, use:
+#  modprobe hi_fb.ko video="hi_fb:vram0_size:7200, vram2_size:2430"
+#  modprobe hi_fb.ko with no args will use defaule value,The defaule value is set by cfg.mak.
+#  vram0 is memory size for HD and vram4 is for SD0. The size is calculated as below:
+#  vram0_size = (1920*1080*4*2/1024)KB; vram4_size = (720*576*2*2/1024)KB
+modprobe hi_fb
+modprobe hi_ir
+modprobe hi_wdg
+modprobe hi_jpeg
+modprobe hi_jpge
+modprobe hi_png
+modprobe hi_keyled
+modprobe hi_ndpt
+modprobe voip_hme
+modprobe hi_aud_adp
+echo 6 > /proc/sys/vm/dirty_ratio
+echo 1 > /proc/sys/vm/overcommit_memory
+echo 8192 > /proc/sys/vm/min_free_kbytes

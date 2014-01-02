@@ -1,0 +1,6 @@
+Common targets are:
+    core-image-minimal
+    hisdk-generic-image
+    hisdk-loader-image
+
+You can also run generated qemu images with a command like 'runqemu qemuarm'
