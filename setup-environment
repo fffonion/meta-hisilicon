@@ -1,0 +1,150 @@
+#!/bin/sh
+#
+# Copyright (C) 2013, Linaro Ltd.
+# Authored-by:  Nicolas Dechesne <nicolas.dechesne@linaro.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License along
+# with this program; if not, write to the Free Software Foundation, Inc.,
+# 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+if [ "$0" = "$BASH_SOURCE" ]; then
+    echo -e "\nERROR: This script must be sourced instead of executed"
+    exit 1
+fi
+
+# check that we are not root!
+if [ "$(whoami)" = "root" ]; then
+    echo -e "\nERROR: do not use the BSP as root. Exiting..."
+    return 1
+fi
+
+# check that we are where we think we are!
+if [ ! -f "openembedded-core/oe-init-build-env" ]; then
+    echo -e "\nUNABLE TO FIND OPENEMBEDDED !"
+    return 1
+fi
+
+usage () {
+    cat <<EOF
+
+Usage: [MACHINE=<MACHINE>] source $BASH_SOURCE [BUILDDIR]
+If no MACHINE is set, list all possible machines, and ask user to choose.
+
+EOF
+}
+
+# only 1 parameter max, <build> folder, or default to build-$machine
+_BUILDDIR=
+if [ $# -gt 1 ]; then
+    usage
+    return 1
+elif [ $# -eq 1 ]; then
+    _BUILDDIR=$1
+    # check if this <build> folder was already configured
+    _CONFIGS_FOUND=
+    if [ -f ${_BUILDDIR}/conf/local.conf ] && \
+        [ -f ${_BUILDDIR}/conf/bblayers.conf ]; then
+        _CONFIGS_FOUND="yes"
+    fi
+fi
+
+# if no MACHINE is set, list all possible machines, and ask user
+if [ -z "$MACHINE" ] && [ -z "$_CONFIGS_FOUND" ]; then
+    PS3='Please enter your choice of machine: '
+    options=$(\ls -1 *{,/*}/conf/machine/*.conf 2>/dev/null | sort | uniq)
+    select opt in $options
+    do
+        if [ -z "$opt" ]; then
+            echo "Invalid choice"
+        else
+            MACHINE=$(echo $opt | sed 's|.*/\(.*\)\.conf|\1|')
+            break;
+        fi
+    done
+    unset PS3
+fi
+
+# at this point, MACHINE is set, either from env, or explicitely
+# BUILDIR is either set from command line, or needs to be set to build-$MACHINE
+if [ -z "$_BUILDDIR" ]; then
+    _BUILDDIR=build-$MACHINE
+    # check if this build-$MACHINE folder was already configured
+    if [ -f ${_BUILDDIR}/conf/local.conf ] && \
+        [ -f ${_BUILDDIR}/conf/bblayers.conf ]; then
+        _CONFIGS_FOUND="yes"
+    fi
+fi
+
+_PWD_PREV=$(pwd)
+
+# Warning: Sourcing the oe-init-build-env script changes the current directory.
+
+TEMPLATECONF=${_PWD_PREV}/meta-hisilicon/conf source openembedded-core/oe-init-build-env ${_BUILDDIR}
+
+if [ "$_CONFIGS_FOUND" ]; then
+    echo -e "\nConfig files already exist in folder ${_BUILDDIR}/conf/, they were not modified."
+    unset -f usage
+    unset _BUILDDIR _CONFIGS_FOUND _PWD_PREV MACHINE
+    return 0
+fi
+
+# Check the machine type specified
+_VALID_MACHINES=$(\ls -1 ${_PWD_PREV}/*{,/*}/conf/machine/${MACHINE}.conf 2>/dev/null | wc -l)
+if [ "$_VALID_MACHINES" -eq 0 ]; then
+    echo -e "\n##\n## WARNING: No machine configs found for '$MACHINE' !"
+    echo -e "##\n## That looks very suspicious, you should check your configuration"
+    echo -e "##\n## Possible alternatives might be:\n##"
+    ( cd ${_PWD_PREV} && \ls -1 *{,/*}/conf/machine/*.conf 2>/dev/null | sed 's|.*/\(.*\)\.conf|##   \1|' | sort | uniq )
+    echo -e "##"
+elif [ "$_VALID_MACHINES" -gt 1 ]; then
+    echo -e "\n##\n## WARNING: Multiple possible machine configs found for '$MACHINE' !\n##"
+    ( cd ${_PWD_PREV} && \ls -1 *{,/*}/conf/machine/${MACHINE}.conf 2>/dev/null | sed 's|^|##   |' )
+    echo -e "##\n## That looks very suspicious, you should check your source tree\n##"
+fi
+
+_NCPU=$(grep '^processor' /proc/cpuinfo 2>/dev/null | wc -l)
+# Sanity check that we have a valid number, if not then fallback to a safe default
+[ "$_NCPU" -ge 1 ] 2>/dev/null || _NCPU=2
+
+# Change settings according environment
+sed -e "s/##MACHINE##/$MACHINE/g" \
+    -e "s/##CPU##/$_NCPU/g" \
+    -i conf/local.conf
+
+# Append BSP layer to BBLAYERS, if the machine is not from meta-linaro or OE (which are included in BBLAYERS by default)
+if [ "$_VALID_MACHINES" -eq 1 ]; then
+    _BSP=$(cd ${_PWD_PREV} && \ls -1 *{,/*}/conf/machine/${MACHINE}.conf 2>/dev/null | sed 's|/conf/machine/.*||' \
+         | grep -E -v 'meta-linaro/meta-linaro|openembedded-core/meta|meta-openembedded/meta-oe')
+    if [ -n "$_BSP" ]; then
+        cat >> conf/bblayers.conf <<EOF
+
+# BSP layer for MACHINE: $MACHINE
+BBLAYERS += "\${OEROOT}/$_BSP"
+
+EOF
+    fi
+fi
+
+cat <<EOF
+
+Configuration files have been created for the following configuration:
+
+ DISTRO: hisdk
+ MACHINE: $MACHINE
+ BB_NUMBER_THREADS: $_NCPU
+ PARALLEL_MAKE: -j $_NCPU
+
+EOF
+
+# Since this script is sourced, be careful not to pollute caller's environment with temp variables
+unset -f usage
+unset _BUILDDIR _CONFIGS_FOUND _PWD_PREV _VALID_MACHINES _NCPU _BSP MACHINE
