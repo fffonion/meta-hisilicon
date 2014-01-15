@@ -1,4 +1,6 @@
 PACKAGECONFIG_GL = "gles2"
+PACKAGECONFIG_FB = " "
+PACKAGECONFIG_append = " examples"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/qtbase:"
 SRC_URI_append += " \
