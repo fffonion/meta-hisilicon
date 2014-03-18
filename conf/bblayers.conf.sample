@@ -11,6 +11,7 @@ BBLAYERS ?= " \
   ${OEROOT}/meta-openembedded/toolchain-layer \
   ${OEROOT}/meta-openembedded/meta-multimedia \
   ${OEROOT}/meta-openembedded/meta-oe \
+  ${OEROOT}/meta-openembedded/meta-ruby \
   ${OEROOT}/meta-linaro/meta-linaro \
   ${OEROOT}/meta-linaro/meta-linaro-toolchain \
   ${OEROOT}/meta-qt5 \

@@ -11,6 +11,8 @@ IMAGE_INSTALL += "\
 	qtbase-fonts \
 	qtbase-plugins \
 	qtbase-examples \
+	qtwebkit \
+	qtwebkit-examples-examples \
 "
 
 inherit core-image
