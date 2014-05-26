@@ -98,7 +98,7 @@ void QEglFSHi3716CV200Hooks::platformInit()
 
 EGLNativeWindowType QEglFSHi3716CV200Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
 {
-    fbdev_window *fbwin = malloc( sizeof( fbdev_window ) );
+    fbdev_window *fbwin = (fbdev_window *)malloc( sizeof( fbdev_window ) );
     if ( NULL == fbwin )
     {
             return 0;
@@ -106,7 +106,7 @@ EGLNativeWindowType QEglFSHi3716CV200Hooks::createNativeWindow(const QSize &size
 
     fbwin->width = size.width();
     fbwin->height = size.height();
-    return fbwin;
+    return (EGLNativeWindowType)fbwin;
 }
 
 void QEglFSHi3716CV200Hooks::destroyNativeWindow(EGLNativeWindowType window)
