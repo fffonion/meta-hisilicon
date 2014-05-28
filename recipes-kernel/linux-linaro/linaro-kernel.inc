@@ -13,13 +13,4 @@ S = "${WORKDIR}/git"
 COMPATIBLE_HOST = "arm.*"
 KERNEL_IMAGETYPE = "zImage"
 
-do_configure_prepend_arm() {
-    ARCH=arm scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig \
-      linaro/configs/hi3xxx.conf
-}
-
-do_configure_prepend_armeb() {
-    ARCH=arm scripts/kconfig/merge_config.sh -m arch/arm/configs/multi_v7_defconfig \
-      linaro/configs/hi3xxx.conf
-}
 
