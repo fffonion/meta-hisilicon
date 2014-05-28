@@ -4,6 +4,7 @@ PACKAGECONFIG_append = " linuxfb icu examples"
 
 FILESEXTRAPATHS_prepend := "${THISDIR}/qtbase:"
 SRC_URI_append += " \
+    file://0001-qeglfswindow.cpp-resovle-menu-content-inversion.patch \
     file://qeglfshooks_hi3716cv200.cpp \
     "
 

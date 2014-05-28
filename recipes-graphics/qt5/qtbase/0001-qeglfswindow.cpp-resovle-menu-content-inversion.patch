@@ -1,0 +1,150 @@
+From 26210fc41315c40119f19990c36bce85decfc86f Mon Sep 17 00:00:00 2001
+From: xufeng <danpher.xu@gmail.com>
+Date: Tue, 27 May 2014 12:40:53 +0800
+Subject: [PATCH] qeglfswindow.cpp: resovle menu content inversion
+
+1 resolve menu content inversion
+2 resolve segment fault about somecase in dir opengl
+
+Signed-off-by: xufeng <danpher.xu@gmail.com>
+---
+ src/plugins/platforms/eglfs/qeglfswindow.cpp |   57 ++++++++++++++++++++------
+ 1 file changed, 44 insertions(+), 13 deletions(-)
+
+diff --git a/src/plugins/platforms/eglfs/qeglfswindow.cpp b/src/plugins/platforms/eglfs/qeglfswindow.cpp
+index 567820c..227d154 100644
+--- a/src/plugins/platforms/eglfs/qeglfswindow.cpp
++++ b/src/plugins/platforms/eglfs/qeglfswindow.cpp
+@@ -54,6 +54,24 @@
+ 
+ QT_BEGIN_NAMESPACE
+ 
++
++//static int refwincnt = 0;
++static EGLSurface __singleWindowSurface = NULL;
++static QWindow::SurfaceType  __singleSurfaceType;
++
++
++
++static WId newWId()
++{
++    static WId id = 0;
++
++    if (id == std::numeric_limits<WId>::max())
++        qWarning("EGLFS: Out of window IDs");
++
++    return ++id;
++}
++
++
+ QEglFSWindow::QEglFSWindow(QWindow *w)
+     : QPlatformWindow(w)
+     , m_surface(0)
+@@ -62,6 +80,8 @@ QEglFSWindow::QEglFSWindow(QWindow *w)
+     , m_backingStore(0)
+     , m_flags(0)
+ {
++	m_wid = newWId();
++
+ #ifdef QEGL_EXTRA_DEBUG
+     qWarning("QEglWindow %p: %p 0x%x\n", this, w, uint(m_window));
+ #endif
+@@ -72,25 +92,19 @@ QEglFSWindow::~QEglFSWindow()
+     destroy();
+ }
+ 
+-static WId newWId()
+-{
+-    static WId id = 0;
+-
+-    if (id == std::numeric_limits<WId>::max())
+-        qWarning("EGLFS: Out of window IDs");
+-
+-    return ++id;
+-}
+ 
+ void QEglFSWindow::create()
+ {
+     if (m_flags.testFlag(Created))
+         return;
+ 
+-    static EGLSurface __singleWindowSurface;
+     if(QEglFSHooks::hooks() && !QEglFSHooks::hooks()->hasCapability(QPlatformIntegration::MultipleWindows) && (__singleWindowSurface))
+     {
+         m_surface = __singleWindowSurface;
++		if(__singleSurfaceType == QSurface::RasterSurface)
++		{
++			m_flags |= IsRaster;
++		}
+ #ifdef QEGL_EXTRA_DEBUG
+     qWarning("Surface recreate request, re-using %x\n", m_surface);
+ #endif
+@@ -98,7 +112,6 @@ void QEglFSWindow::create()
+     }
+ 
+     m_flags = Created;
+-    m_wid = newWId();
+ 
+     if (window()->type() == Qt::Desktop) {
+         QRect rect(QPoint(), QEglFSHooks::hooks()->screenSize());
+@@ -108,8 +121,10 @@ void QEglFSWindow::create()
+     }
+ 
+     // Save the original surface type before changing to OpenGLSurface.
+-    if (window()->surfaceType() == QSurface::RasterSurface)
++    if (window()->surfaceType() == QSurface::RasterSurface){
+         m_flags |= IsRaster;
++    }else{
++    }
+ 
+     // Stop if there is already a window backed by a native window and surface. Additional
+     // raster windows will not have their own native window, surface and context. Instead,
+@@ -124,10 +139,19 @@ void QEglFSWindow::create()
+         // Other combinations cannot work.
+         qFatal("EGLFS: OpenGL windows cannot be mixed with others.");
+ #endif
+-
+         return;
+     }
+ 
++
++    if(QEglFSHooks::hooks() && !QEglFSHooks::hooks()->hasCapability(QPlatformIntegration::MultipleWindows) )
++    {
++    	if(__singleWindowSurface){
++    	}else{
++			qDebug("single windows system, create nativewindow eglsurface......");
++			__singleSurfaceType == window()->surfaceType();
++    	}
++    }
++
+     window()->setSurfaceType(QSurface::OpenGLSurface);
+     m_flags |= HasNativeWindow;
+     setGeometry(QRect()); // will become fullscreen
+@@ -156,6 +180,10 @@ void QEglFSWindow::create()
+     }
+ }
+ 
++
++
++
++
+ void QEglFSWindow::destroy()
+ {
+     QEglFSScreen *screen = this->screen();
+@@ -168,10 +196,13 @@ void QEglFSWindow::destroy()
+             screen->setPrimarySurface(EGL_NO_SURFACE);
+ 
+         invalidateSurface();
++		__singleWindowSurface = 0;
+     }
+ 
++
+     m_flags = 0;
+     screen->removeWindow(this);
++
+ }
+ 
+ // The virtual functions resetSurface and invalidateSurface may get overridden
+-- 
+1.7.9.5
+

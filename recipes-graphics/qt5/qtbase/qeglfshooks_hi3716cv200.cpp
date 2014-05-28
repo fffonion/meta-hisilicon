@@ -48,6 +48,9 @@
 
 #include "EGL/fbdev_window.h"
 
+#include <qpa/qplatformwindow.h>
+
+
 QT_BEGIN_NAMESPACE
 
 class QEglFSHi3716CV200Hooks : public QEglFSHooks
@@ -56,15 +59,18 @@ private:
     void hi_fb_initpara();
 public:
     virtual void platformInit();
-    virtual EGLNativeWindowType createNativeWindow(const QSize &size, const QSurfaceFormat &format);
+    virtual EGLNativeWindowType createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format);
     virtual void destroyNativeWindow(EGLNativeWindowType window);
 };
 
 void QEglFSHi3716CV200Hooks::hi_fb_initpara()
 {
-    struct fb_var_screeninfo vinfo;
-    int console_fd = open("/dev/fb0", O_RDWR, 0);
     int err;
+    struct fb_var_screeninfo vinfo;
+
+    int console_fd = open("/dev/fb0", O_RDWR, 0);
+
+    memset(&vinfo, 0, sizeof(vinfo));
 
     ioctl(console_fd, FBIOGET_VSCREENINFO, &vinfo);
     vinfo.bits_per_pixel   = 32;
@@ -78,7 +84,7 @@ void QEglFSHi3716CV200Hooks::hi_fb_initpara()
     vinfo.red.offset       = 16;
     vinfo.transp.offset    = 24;
 
-    //vinfo.yres_virtual    = 2 * vinfo.yres;
+    vinfo.yres_virtual    = 2 * vinfo.yres;
 
     if ((err = ioctl(console_fd, FBIOPUT_VSCREENINFO, &vinfo)) < 0)
     {
@@ -96,7 +102,7 @@ void QEglFSHi3716CV200Hooks::platformInit()
     hi_fb_initpara();
 }
 
-EGLNativeWindowType QEglFSHi3716CV200Hooks::createNativeWindow(const QSize &size, const QSurfaceFormat &format)
+EGLNativeWindowType QEglFSHi3716CV200Hooks::createNativeWindow(QPlatformWindow *window, const QSize &size, const QSurfaceFormat &format)
 {
     fbdev_window *fbwin = (fbdev_window *)malloc( sizeof( fbdev_window ) );
     if ( NULL == fbwin )
