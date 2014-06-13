@@ -10,7 +10,18 @@ IMAGE_INSTALL += "\
 	${CORE_IMAGE_BASE_INSTALL} \
     gstreamer1.0 \
     gstreamer1.0-plugins-base \
+    gstreamer1.0-plugins-good \
+    gstreamer1.0-plugins-bad \
+    gstreamer1.0-meta-base \
     gstreamer1.0-plugins-good-audioparsers \
+    gstreamer1.0-plugins-good-isomp4 \
+    libgstriff-1.0 \
+    libgstrtp-1.0 \
+    alsa-tools \
+    alsa-utils-alsaconf \
+    alsa-utils \
+    alsa-lib \
+    gstreamer1.0-plugins-good-deinterlace  \
 "
 
 inherit core-image
