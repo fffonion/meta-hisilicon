@@ -1,0 +1,135 @@
+--- a/gst/gstbufferpool.c	2014-06-01 13:20:02.978625754 +0800
++++ b/gst/gstbufferpool.c	2014-06-01 13:21:22.798629617 +0800
+@@ -131,6 +131,9 @@
+     GstBuffer ** buffer, GstBufferPoolAcquireParams * params);
+ static GstFlowReturn default_acquire_buffer (GstBufferPool * pool,
+     GstBuffer ** buffer, GstBufferPoolAcquireParams * params);
++static GstFlowReturn default_acquire_buffer_ex (GstBufferPool * pool,
++    GstBuffer ** buffer, GstBufferPoolAcquireParams * params, gpointer buf);
++
+ static void default_reset_buffer (GstBufferPool * pool, GstBuffer * buffer);
+ static void default_free_buffer (GstBufferPool * pool, GstBuffer * buffer);
+ static void default_release_buffer (GstBufferPool * pool, GstBuffer * buffer);
+@@ -148,6 +151,7 @@
+   klass->stop = default_stop;
+   klass->set_config = default_set_config;
+   klass->acquire_buffer = default_acquire_buffer;
++  klass->acquire_buffer_ex = default_acquire_buffer_ex;
+   klass->reset_buffer = default_reset_buffer;
+   klass->alloc_buffer = default_alloc_buffer;
+   klass->release_buffer = default_release_buffer;
+@@ -1022,6 +1026,58 @@
+     return GST_FLOW_FLUSHING;
+   }
+ }
++static GstFlowReturn
++default_acquire_buffer_ex (GstBufferPool * pool, GstBuffer ** buffer,
++    GstBufferPoolAcquireParams * params, gpointer buf)
++{
++  GstFlowReturn result =GST_FLOW_EOS;
++  GstBufferPoolPrivate *priv = pool->priv;
++  GList *tmp_buffer_list = 0, *l;
++
++  while(TRUE) {
++    if (G_UNLIKELY (GST_BUFFER_POOL_IS_FLUSHING (pool)))
++      goto flushing;
++
++	/* try to get a buffer from the queue */
++    *buffer = gst_atomic_queue_pop (priv->queue);
++    if (G_LIKELY (*buffer)) {
++
++		gpointer mmz_buff = gst_mini_object_get_qdata(GST_MINI_OBJECT_CAST(*buffer),
++					g_quark_from_string("omx"));
++
++		if (mmz_buff == buf){
++			gst_poll_read_control (priv->poll);
++			result = GST_FLOW_OK;
++			GST_LOG_OBJECT (pool, "acquired buffer %p", *buffer);
++			break;
++		}
++
++		/* not my buffer, then save to list and find next*/
++		tmp_buffer_list = g_list_append(tmp_buffer_list, *buffer);
++	}
++	else {
++		printf("no buffer:%p:%s\n",buf, __FILE__);
++		usleep(1000);	
++	}
++  }
++
++  l = tmp_buffer_list;
++  while( l ) {
++	default_release_buffer(pool, l->data);
++	l = l->next;
++  }
++  g_list_free(tmp_buffer_list);
++
++  return result;
++
++  /* ERRORS */
++flushing:
++  {
++    GST_DEBUG_OBJECT (pool, "we are flushing");
++    return GST_FLOW_FLUSHING;
++  }
++}
++
+ 
+ static inline void
+ dec_outstanding (GstBufferPool * pool)
+@@ -1111,6 +1167,38 @@
+ 
+   return result;
+ }
++GstFlowReturn
++gst_buffer_pool_acquire_buffer_ex (GstBufferPool * pool, GstBuffer ** buffer,
++    GstBufferPoolAcquireParams * params, gpointer buf)
++{
++  GstBufferPoolClass *pclass;
++  GstFlowReturn result;
++
++  g_return_val_if_fail (GST_IS_BUFFER_POOL (pool), GST_FLOW_ERROR);
++  g_return_val_if_fail (buffer != NULL, GST_FLOW_ERROR);
++
++  pclass = GST_BUFFER_POOL_GET_CLASS (pool);
++
++  /* assume we'll have one more outstanding buffer we need to do that so
++   * that concurrent set_active doesn't clear the buffers */
++  g_atomic_int_inc (&pool->priv->outstanding);
++
++  if (G_LIKELY (pclass->acquire_buffer_ex))
++    result = pclass->acquire_buffer_ex (pool, buffer, params, buf);
++  else
++    result = GST_FLOW_NOT_SUPPORTED;
++
++  if (G_LIKELY (result == GST_FLOW_OK)) {
++    /* all buffers from the pool point to the pool and have the refcount of the
++     * pool incremented */
++    (*buffer)->pool = gst_object_ref (pool);
++  } else {
++    dec_outstanding (pool);
++  }
++
++  return result;
++}
++
+ 
+ static void
+ default_release_buffer (GstBufferPool * pool, GstBuffer * buffer)
+@@ -1158,4 +1246,16 @@
+ 
+   /* decrease the refcount that the buffer had to us */
+   gst_object_unref (pool);
++
++guint 
++gst_buffer_pool_buffer_count(GstBufferPool *pool) 
++{
++	GstBufferPoolPrivate *priv = pool->priv;
++
++	if (!gst_buffer_pool_is_active(pool)){
++		return 0;
++	}
++
++	return priv->cur_buffers;
++}
+ }
