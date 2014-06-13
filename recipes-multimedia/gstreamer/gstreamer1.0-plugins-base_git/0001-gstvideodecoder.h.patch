@@ -1,0 +1,13 @@
+--- a/gst-libs/gst/video/gstvideodecoder.h	2014-06-01 13:43:35.742694128 +0800
++++ b/gst-libs/gst/video/gstvideodecoder.h	2014-06-01 13:44:55.734697999 +0800
+@@ -347,6 +347,10 @@
+ 							GstVideoCodecState *reference);
+ 
+ GstVideoCodecState *gst_video_decoder_get_output_state (GstVideoDecoder *decoder);
++GstBuffer     *gst_video_decoder_allocate_output_buffer_ex (GstVideoDecoder * decoder, gpointer buf);
++GstFlowReturn  gst_video_decoder_allocate_output_frame_ex  (GstVideoDecoder *decoder,
++						         GstVideoCodecFrame *frame, gpointer buf);
++
+ 
+ gboolean         gst_video_decoder_negotiate           (GstVideoDecoder * decoder);
+ 

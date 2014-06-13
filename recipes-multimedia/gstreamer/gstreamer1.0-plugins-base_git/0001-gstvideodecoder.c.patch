@@ -1,0 +1,120 @@
+--- a/gst-libs/gst/video/gstvideodecoder.c	2014-06-01 13:43:35.742694128 +0800
++++ b/gst-libs/gst/video/gstvideodecoder.c	2014-06-01 15:29:11.027000738 +0800
+@@ -3476,3 +3476,117 @@
+   if (params)
+     *params = decoder->priv->params;
+ }
++
++
++
++
++
++
++
++ GstBuffer *
++ gst_video_decoder_allocate_output_buffer_ex (GstVideoDecoder * decoder, gpointer buf)
++ {
++   GstFlowReturn flow;
++   GstBuffer *buffer = NULL;
++   gboolean needs_reconfigure = FALSE;
++ 
++   GST_DEBUG ("alloc src buffer");
++ 
++   GST_VIDEO_DECODER_STREAM_LOCK (decoder);
++   needs_reconfigure = gst_pad_check_reconfigure (decoder->srcpad);
++   if (G_UNLIKELY (!decoder->priv->output_state
++           || decoder->priv->output_state_changed || needs_reconfigure)) {
++     if (!gst_video_decoder_negotiate_unlocked (decoder)) {
++       if (decoder->priv->output_state) {
++         GST_DEBUG_OBJECT (decoder, "Failed to negotiate, fallback allocation");
++         gst_pad_mark_reconfigure (decoder->srcpad);
++         goto fallback;
++       } else {
++         GST_DEBUG_OBJECT (decoder, "Failed to negotiate, output_buffer=NULL");
++         goto failed_allocation;
++       }
++     }
++   }
++ 
++   //flow = gst_buffer_pool_acquire_buffer (decoder->priv->pool, &buffer, NULL);
++   flow = gst_buffer_pool_acquire_buffer_ex (decoder->priv->pool, &buffer, NULL, buf);
++ 
++   if (flow != GST_FLOW_OK) {
++     GST_INFO_OBJECT (decoder, "couldn't allocate output buffer, flow %s",
++         gst_flow_get_name (flow));
++     if (decoder->priv->output_state && decoder->priv->output_state->info.size)
++       goto fallback;
++     else
++       goto failed_allocation;
++   }
++   GST_VIDEO_DECODER_STREAM_UNLOCK (decoder);
++ 
++   return buffer;
++ 
++ fallback:
++   GST_INFO_OBJECT (decoder,
++       "Fallback allocation, creating new buffer which doesn't belongs to any buffer pool");
++   buffer =
++       gst_buffer_new_allocate (NULL, decoder->priv->output_state->info.size,
++       NULL);
++ 
++ failed_allocation:
++   GST_ERROR_OBJECT (decoder, "Failed to allocate the buffer..");
++   GST_VIDEO_DECODER_STREAM_UNLOCK (decoder);
++ 
++   return buffer;
++ }
++ 
++
++
++ GstFlowReturn
++ gst_video_decoder_allocate_output_frame_ex (GstVideoDecoder *
++     decoder, GstVideoCodecFrame * frame, gpointer buf)
++ {
++   GstFlowReturn flow_ret;
++   GstVideoCodecState *state;
++   int num_bytes;
++   gboolean needs_reconfigure = FALSE;
++ 
++   g_return_val_if_fail (decoder->priv->output_state, GST_FLOW_NOT_NEGOTIATED);
++   g_return_val_if_fail (frame->output_buffer == NULL, GST_FLOW_ERROR);
++ 
++   GST_VIDEO_DECODER_STREAM_LOCK (decoder);
++ 
++   state = decoder->priv->output_state;
++   if (state == NULL) {
++     g_warning ("Output state should be set before allocating frame");
++     goto error;
++   }
++   num_bytes = GST_VIDEO_INFO_SIZE (&state->info);
++   if (num_bytes == 0) {
++     g_warning ("Frame size should not be 0");
++     goto error;
++   }
++ 
++   needs_reconfigure = gst_pad_check_reconfigure (decoder->srcpad);
++   if (G_UNLIKELY (decoder->priv->output_state_changed || needs_reconfigure)) {
++     if (!gst_video_decoder_negotiate_unlocked (decoder)) {
++       GST_DEBUG_OBJECT (decoder, "Failed to negotiate, fallback allocation");
++       gst_pad_mark_reconfigure (decoder->srcpad);
++     }
++   }
++ 
++   GST_LOG_OBJECT (decoder, "alloc buffer size %d", num_bytes);
++ 
++   /*flow_ret = gst_buffer_pool_acquire_buffer (decoder->priv->pool,
++       &frame->output_buffer, NULL);
++ */
++ 
++   flow_ret = gst_buffer_pool_acquire_buffer_ex (decoder->priv->pool,
++       &frame->output_buffer, NULL, buf);
++
++  GST_VIDEO_DECODER_STREAM_UNLOCK (decoder);
++
++  return flow_ret;
++
++error:
++  GST_VIDEO_DECODER_STREAM_UNLOCK (decoder);
++  return GST_FLOW_ERROR;
++
++ }
