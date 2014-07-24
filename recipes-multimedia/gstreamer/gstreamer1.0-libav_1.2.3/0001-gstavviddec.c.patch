@@ -1,0 +1,13 @@
+--- gst-libav-1.2.3/ext/libav/gstavviddec.c	2014-01-15 18:19:58.000000000 +0800
++++ gst-libav-1.2.3.b/ext/libav/gstavviddec.c	2014-07-24 09:31:30.088122917 +0800
+@@ -1921,6 +1921,10 @@
+       case AV_CODEC_ID_MPEG4:
+       case AV_CODEC_ID_MSMPEG4V3:
+       case AV_CODEC_ID_H264:
++        /* patch: Use omx plugin to decode H264/MPEG video on HI3716c board
++         */
++        rank = GST_RANK_SECONDARY;
++        break;
+       case AV_CODEC_ID_RV10:
+       case AV_CODEC_ID_RV20:
+       case AV_CODEC_ID_RV30:
