@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://LICENCE;md5=427429c3f0211c2090febdeac0f46d76"
 PROVIDES = "virtual/libgles1 virtual/libgles2 virtual/egl"
 COMPATIBLE_MACHINE = "hi3716cv200"
 
-SRCREV = "4d2d07e07df4a0809c8853a7b907949f46d758c9"
+SRCREV = "8a702a68def1ef703ea509cad8a139e1d5c2e20b"
 SRC_URI = "git://github.com/hisilicon/x5hd2-gpu-libs.git;protocol=https"
 
 S = "${WORKDIR}/git"
