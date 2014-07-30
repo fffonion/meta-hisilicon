@@ -2,14 +2,14 @@ DESCRIPTION = "Linaro Kernel For Hisilicon hi3716-dkb board"
 
 require linaro-kernel.inc
 
-SRCREV = "fd26efea49ea1a7e3594e446ee8648f059961f23"
+SRCREV = "87c8c10aff5db65eac368940d6558a193af971bd"
 PV = "3.15+git${SRCPV}"
 
 KERNEL_DEVICETREE = "${S}/arch/arm/boot/dts/hix5hd2-dkb.dts"
 
 BOOTARGS_COMMON = "console=ttyAMA0,115200"
 
-SRC_URI = "git://github.com/hisilicon/linaro-kernel.git;protocol=https;branch=hix5hd2  \
+SRC_URI = "git://github.com/hisilicon/linaro-kernel.git;protocol=https;branch=xjc/hix5hd2-lsk-3.10-msp  \
            file://defconfig \
            "
 
