@@ -1,0 +1,27 @@
+From c9a486b90ef772857245aa04a653202ded7a25c9 Mon Sep 17 00:00:00 2001
+From: Yan Haifeng <yanhaifeng@gmail.com>
+Date: Fri, 12 Jun 2015 11:41:57 +0800
+Subject: [PATCH] dosbox.h: resolve compilation error.
+
+include stddef.h to dosbox.h.
+
+Signed-off-by: Yan Haifeng <yanhaifeng@gmail.com>
+---
+ include/dosbox.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/include/dosbox.h b/include/dosbox.h
+index c46cf0a..db18c2a 100644
+--- a/include/dosbox.h
++++ b/include/dosbox.h
+@@ -22,6 +22,7 @@
+ #define DOSBOX_DOSBOX_H
+ 
+ #include "config.h"
++#include <stddef.h>
+ 
+ void E_Exit(const char * message,...) GCC_ATTRIBUTE( __format__(__printf__, 1, 2));
+ 
+-- 
+1.9.1
+
