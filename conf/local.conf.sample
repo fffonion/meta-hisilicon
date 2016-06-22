@@ -144,6 +144,9 @@ EXTRA_IMAGE_FEATURES = "debug-tweaks"
 IMAGE_FEATURES += "package-management"
 CORE_IMAGE_EXTRA_INSTALL += "opkg"
 
+# No *-dbg packages
+INHIBIT_PACKAGE_DEBUG_SPLIT = 1
+
 #
 # Additional image features
 #
