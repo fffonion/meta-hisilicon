@@ -141,6 +141,9 @@ PACKAGE_CLASSES ?= "package_ipk"
 # We default to enabling the debugging tweaks.
 EXTRA_IMAGE_FEATURES = "debug-tweaks"
 
+IMAGE_FEATURES += "package-management"
+CORE_IMAGE_EXTRA_INSTALL += "opkg"
+
 #
 # Additional image features
 #
