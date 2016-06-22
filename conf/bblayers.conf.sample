@@ -8,12 +8,11 @@ OEROOT := "${@os.path.abspath(os.path.dirname(d.getVar('FILE', True)) + '/../..'
 
 BBLAYERS ?= " \
   ${OEROOT}/openembedded-core/meta \
-  ${OEROOT}/meta-openembedded/toolchain-layer \
   ${OEROOT}/meta-openembedded/meta-multimedia \
   ${OEROOT}/meta-openembedded/meta-oe \
   ${OEROOT}/meta-openembedded/meta-ruby \
+  ${OEROOT}/meta-openembedded/meta-python \
   ${OEROOT}/meta-openembedded/meta-networking \
-  ${OEROOT}/meta-linaro/meta-linaro \
   ${OEROOT}/meta-linaro/meta-linaro-toolchain \
   ${OEROOT}/meta-qt5 \
   "
