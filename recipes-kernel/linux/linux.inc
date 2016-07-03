@@ -111,7 +111,9 @@ do_configure_prepend() {
 	# Remove all modified configs and add the rest to .config
 	sed -e "${CONF_SED_SCRIPT}" < '${WORKDIR}/defconfig' >> '${S}/.config'
 
+	cd ${S}
 	yes '' | oe_runmake oldconfig
+	cd ..
 }
 
 # Automatically depend on lzop-native if CONFIG_KERNEL_LZO is enabled

@@ -7,6 +7,8 @@ PV_append = "+git${SRCREV}"
 
 SRCREV = "2a03a5453a3c446fa21b50f7ea0b914095d308e9"
 SRC_URI = "git://github.com/hisilicon/linux-x5hd2.git;protocol=https"
+#SRC_URI = "https://github.com/hisilicon/linux-x5hd2/archive/master.zip"
+#SRC_URI[md5sum] = "08139ee78d4145e3b7811a41140d1ab3"
 
 S = "${WORKDIR}/git"
 
