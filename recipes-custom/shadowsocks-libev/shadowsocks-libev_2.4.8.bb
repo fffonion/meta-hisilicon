@@ -17,7 +17,7 @@ CFLAGS += "-L${STAGING_LIBDIR} -I${STAGING_INCDIR}"
 do_configure() {
 	cd ${S}
 	autoreconf --force --install
-	oe_runconf
+	oe_runconf --disable-documentation
 }
 
 do_compile() {
@@ -34,5 +34,5 @@ do_install() {
         install -m 0755 ${S}/src/ss-nat ${D}/${bindir}
 }
 
-SRC_URI[md5sum] = "859505dd3d42d3eacb2facd373e7c3f1"
-SRC_URI[sha256sum] = "957265cc5339e020d8c8bb7414ab14936e3939dc7355f334aec896ec9b03c6ed"
+SRC_URI[md5sum] = "8b300e5732a594245fa9c08fd7fbf738"
+SRC_URI[sha256sum] = "af3fc3be50fb24dfd1aed8ce34d2d13448735f6181269f54f4860438a1838472"
