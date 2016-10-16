@@ -34,5 +34,5 @@ do_install() {
         mkdir -p ${D}/${bindir}
         install -m 0755 ${S}/src/aria2c ${D}/${bindir}
 }
-SRC_URI[md5sum] = "16fb421caddc2f3cdae30b212ff163f3"
-SRC_URI[sha256sum] = "67ccf1d5d5c08a03c68a54e222cbba19d4c652e11551cab96f72686779809b72"
+SRC_URI[md5sum] = "d268ad52132c9b25ee4a53280c7a55bc"
+SRC_URI[sha256sum] = "65c249f3ceb0d39e1d4c20828f04c0189de17ce8cdb5d33a95e43ea664f8f5f9"
