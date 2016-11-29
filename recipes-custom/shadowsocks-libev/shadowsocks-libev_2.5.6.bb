@@ -33,5 +33,5 @@ do_install() {
         install -m 0755 ${S}/src/ss-tunnel ${D}/${bindir}
         install -m 0755 ${S}/src/ss-nat ${D}/${bindir}
 }
-SRC_URI[md5sum] = "f4593a1ee28f4f8c5378662e0ab2764b"
-SRC_URI[sha256sum] = "46a72367b7301145906185f1e4136e39d6792d27643826e409ab708351b6d0dd"
+SRC_URI[md5sum] = "8dbde3cc317d437d56a4d807b8eabf02"
+SRC_URI[sha256sum] = "fa232047d12d39bf19f3539828ca1662da5e5905bfc03163ba20c37fe8e94d8f"

@@ -66,5 +66,5 @@ pkg_postinst() {
                                                --ingroup privoxy -g "Privoxy" privoxy
 }
 
-SRC_URI[md5sum] = "d83933f4d1e80465a5bb7c600851c605"
-SRC_URI[sha256sum] = "a96a05e7649cfa68f60b02445db27e75d0ca9edcdc0bf8b07de4cde49c8d7905" 
+SRC_URI[md5sum] = "8a1c842112ccea68c19b7ceb4a0e999f"
+SRC_URI[sha256sum] = "57e415b43ee5dfdca74685cc034053eaae962952fdabd086171551a86abf9cd8"
