@@ -7,7 +7,7 @@ LICENSE = "GPL"
 DEPENDS = "pcre"
 PR = "r0"
 
-SRC_URI = "${SOURCEFORGE_MIRROR}/ijbswa/Sources/${PV}%20%28beta%29/privoxy-${PV}-beta-src.tar.gz \
+SRC_URI = "${SOURCEFORGE_MIRROR}/ijbswa/Sources/${PV}%20%28stable%29/privoxy-${PV}-stable-src.tar.gz \
           file://privoxy.conf \
           file://privoxy.init"
 
