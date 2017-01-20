@@ -2,10 +2,10 @@ DESCRIPTION = "libev port of shadowsocks"
 SECTION = "console/network"
 PRIORITY = "optional"
 LICENSE = "GPL"
-DEPENDS = "openssl"
+DEPENDS = "libev libudns libsodium libmbedtls"
 PR = "r0"
 
-SRC_URI = "https://github.com/shadowsocks/shadowsocks-libev/archive/v${PV}.tar.gz"
+SRC_URI = "https://github.com/shadowsocks/shadowsocks-libev/releases/download/v${PV}/shadowsocks-libev-${PV}.tar.gz"
 
 S = "${WORKDIR}/shadowsocks-libev-${PV}"
 
