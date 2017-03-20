@@ -2,12 +2,12 @@ DESCRIPTION = "libev port of shadowsocks"
 SECTION = "console/network"
 PRIORITY = "optional"
 LICENSE = "GPL"
-DEPENDS = "libev libudns libsodium libmbedtls"
+DEPENDS = "mbedtls udns libev libsodium"
 PR = "r0"
 
-SRC_URI = "https://github.com/shadowsocks/shadowsocks-libev/releases/download/v${PV}/shadowsocks-libev-${PV}.tar.gz"
+SRC_URI = "gitsm://github.com/shadowsocks/shadowsocks-libev.git;protocol=https;tag=v${PV}"
 
-S = "${WORKDIR}/shadowsocks-libev-${PV}"
+S = "${WORKDIR}/git"
 
 inherit autotools
 
@@ -16,11 +16,15 @@ CFLAGS += "-L${STAGING_LIBDIR} -I${STAGING_INCDIR}"
 
 do_configure() {
 	cd ${S}
-	autoreconf --force --install
+        ./autogen.sh
 	oe_runconf --disable-documentation
 }
 
 do_compile() {
+        cd ${S}/libbloom
+        make clean
+        oe_runmake -C ${S} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
+        cd ..
         oe_runmake -C ${S} CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
 }
 
@@ -33,5 +37,5 @@ do_install() {
         install -m 0755 ${S}/src/ss-tunnel ${D}/${bindir}
         install -m 0755 ${S}/src/ss-nat ${D}/${bindir}
 }
-SRC_URI[md5sum] = "67c9e5b4223f6dfd8ae1084af2c99b78"
-SRC_URI[sha256sum] = "f2dda87a3c25574b560521455a28463b43be0c092ed74551f9ef6aeb76e5ce75"
+SRC_URI[md5sum] = "4423129a2a838cf8884075551ce14a36"
+SRC_URI[sha256sum] = "1c30646bc716c18c5e425011712632983af7c942e6157aed55a3452a30cdc07e"
