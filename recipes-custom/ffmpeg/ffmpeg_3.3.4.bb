@@ -15,8 +15,8 @@ LIC_FILES_CHKSUM = "file://COPYING.GPLv2;md5=b234ee4d69f5fce4486a80fdaf4a4263 \
 
 SRC_URI = "https://www.ffmpeg.org/releases/${BP}.tar.xz"
 
-SRC_URI[md5sum] = "047dce1928df340574c891fb801d89ad"
-SRC_URI[sha256sum] = "b702a7fc656ac23e276b8c823a2f646e4e6f6309bb2788435a708e69bea98f2f"
+SRC_URI[md5sum] = "e14a0200c78ce5c918427e57cd406a0d"
+SRC_URI[sha256sum] = "98b97e1b908dfeb6aeb6d407e5a5eacdfc253a40c2d195f5867ed2d1d46ea957"
 
 # Build fails when thumb is enabled: https://bugzilla.yoctoproject.org/show_bug.cgi?id=7717
 ARM_INSTRUCTION_SET = "arm"
