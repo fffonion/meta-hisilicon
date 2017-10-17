@@ -1,5 +1,4 @@
 SUMMARY = "Extends Python unittest to make testing easier"
-HOMEPAGE = "http://readthedocs.org/docs/nose/"
 DESCRIPTION = "nose extends the test loading and running features of unittest, \
 making it easier to write, find and run tests."
 SECTION = "devel/python"
@@ -16,10 +15,14 @@ UPSTREAM_CHECK_REGEX = "/nose/(?P<pver>(\d+[\.\-_]*)+)"
 
 S = "${WORKDIR}/nose-${PV}"
 
-inherit setuptools
+inherit setuptools3
 
-RDEPENDS_${PN} = "\
-  python-unittest \
+do_install_append() {
+    mv ${D}${bindir}/nosetests ${D}${bindir}/nosetests3
+}
+
+RDEPENDS_${PN}_class-target = "\
+  python3-unittest \
   "
 
 BBCLASSEXTEND = "native nativesdk"
