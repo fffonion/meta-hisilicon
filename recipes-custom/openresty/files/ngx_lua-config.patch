@@ -1,0 +1,44 @@
+--- a/config      2017-10-19 19:42:57.000000000 -0400
++++ b/config      2017-10-19 19:44:44.000000000 -0400
+@@ -17,10 +17,10 @@
+     if [ "$NGX_PLATFORM" = win32 ]; then
+         ngx_feature="LuaJIT library in $LUAJIT_LIB and $LUAJIT_INC (win32)"
+         ngx_feature_path="$LUAJIT_INC"
+-        ngx_lua_opt_I="-I$LUAJIT_INC"
+-        ngx_lua_opt_L="-L$LUAJIT_LIB"
++        ngx_lua_opt_I="-I${STAGING_DIR_TARGET}$LUAJIT_INC"
++        ngx_lua_opt_L="-L${STAGING_DIR_TARGET}$LUAJIT_LIB"
+
+-        # ensure that our -I$LUAJIT_INC and -L$LUAJIT_LIB is at the first.
++        # ensure that our -I${STAGING_DIR_TARGET}$LUAJIT_INC and -L${STAGING_DIR_TARGET}$LUAJIT_LIB is at the first.
+         SAVED_CC_TEST_FLAGS="$CC_TEST_FLAGS"
+         CC_TEST_FLAGS="$ngx_lua_opt_I $CC_TEST_FLAGS"
+         SAVED_NGX_TEST_LD_OPT="$NGX_TEST_LD_OPT"
+@@ -39,10 +39,10 @@
+         # attempt to link with -ldl, static linking on Linux requires it.
+         ngx_feature="LuaJIT library in $LUAJIT_LIB and $LUAJIT_INC (specified by the LUAJIT_LIB and LUAJIT_INC env, with -ldl)"
+         ngx_feature_path="$LUAJIT_INC"
+-        ngx_lua_opt_I="-I$LUAJIT_INC"
+-        ngx_lua_opt_L="-L$LUAJIT_LIB"
++        ngx_lua_opt_I="-I${STAGING_DIR_TARGET}$LUAJIT_INC"
++        ngx_lua_opt_L="-L${STAGING_DIR_TARGET}$LUAJIT_LIB"
+
+-        # ensure that our -I$LUAJIT_INC and -L$LUAJIT_LIB is at the first.
++        # ensure that our -I${STAGING_DIR_TARGET}$LUAJIT_INC and -L${STAGING_DIR_TARGET}$LUAJIT_LIB is at the first.
+         SAVED_CC_TEST_FLAGS="$CC_TEST_FLAGS"
+         CC_TEST_FLAGS="$ngx_lua_opt_I $CC_TEST_FLAGS"
+         SAVED_NGX_TEST_LD_OPT="$NGX_TEST_LD_OPT"
+@@ -64,10 +64,10 @@
+             # retry without -ldl
+             ngx_feature="LuaJIT library in $LUAJIT_LIB and $LUAJIT_INC (specified by the LUAJIT_LIB and LUAJIT_INC env)"
+             ngx_feature_path="$LUAJIT_INC"
+-            ngx_lua_opt_I="-I$LUAJIT_INC"
+-            ngx_lua_opt_L="-L$LUAJIT_LIB"
++            ngx_lua_opt_I="-I${STAGING_DIR_TARGET}$LUAJIT_INC"
++            ngx_lua_opt_L="-L${STAGING_DIR_TARGET}$LUAJIT_LIB"
+
+-            # ensure that our -I$LUAJIT_INC and -L$LUAJIT_LIB is at the first.
++            # ensure that our -I${STAGING_DIR_TARGET}$LUAJIT_INC and -L${STAGING_DIR_TARGET}$LUAJIT_LIB is at the first.
+             SAVED_CC_TEST_FLAGS="$CC_TEST_FLAGS"
+             CC_TEST_FLAGS="$ngx_lua_opt_I $CC_TEST_FLAGS"
+             SAVED_NGX_TEST_LD_OPT="$NGX_TEST_LD_OPT"
