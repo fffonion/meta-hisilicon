@@ -7,6 +7,10 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/LICENSE;md5=3f40d7994397109285ec7b81fdeb3
 
 IMAGE_INSTALL += "\
 	${CORE_IMAGE_BASE_INSTALL} \
+        ffmpeg \
+        aria2 \
+        shadowsocks-libev \
+        samba \
 "
 
 inherit core-image

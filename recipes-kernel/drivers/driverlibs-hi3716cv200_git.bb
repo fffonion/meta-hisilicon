@@ -7,7 +7,7 @@ PROVIDES = "virtual/driverlibs-rdk-hisilicon"
 PV = "1.0+gitr${SRCPV}"
 
 SRCREV="ff0bb195973168623d2cced8500c39c4e2538ddb"
-SRC_URI = "git://github.com/hisilicon/x5hd2-drivers.git;protocol=https"
+SRC_URI = "git://git@git.yooooo.us/hisilicon/x5hd2-drivers.git;protocol=ssh"
 
 S = "${WORKDIR}/git"
 
