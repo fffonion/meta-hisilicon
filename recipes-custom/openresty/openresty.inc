@@ -74,7 +74,7 @@ do_configure () {
             --with-ptr-size=${PTRSIZE} \
             --with-sig-atomic-t=${PTRSIZE} \
             --with-size-t=${PTRSIZE} \
-            --with-off-t=${PTRSIZE} \
+            --with-off-t=8 \
             --with-time-t=${PTRSIZE} \
             --with-sys-nerr=132 \
             --with-cc="${CC} ${CFLAGS}" \
