@@ -17,6 +17,19 @@ UDEV_GE_141 ?= "1"
 CMDLINE_DEBUG ?= '${@base_conditional("DISTRO_TYPE", "release", "quiet", "debug", d)}'
 CMDLINE_append = " ${CMDLINE_DEBUG}"
 
+AUFS_DIR = "${WORKDIR}/git/aufs4-standalone"
+do_patch () {
+        cd ${S}
+        patch -p1 < ${AUFS_DIR}/aufs4-kbuild.patch
+        patch -p1 < ${AUFS_DIR}/aufs4-base.patch
+        patch -p1 < ${AUFS_DIR}/aufs4-mmap.patch
+        patch -p1 < ${AUFS_DIR}/aufs4-standalone.patch
+        cp ${AUFS_DIR}/Documentation ${AUFS_DIR}/fs -r .
+        cp ${AUFS_DIR}/include/uapi/linux/aufs_type.h include/uapi/linux/
+        cd ..
+}
+
+
 # Set a variable in .configure
 # $1 - Configure variable to be set
 # $2 - value [n/y/value]
@@ -31,7 +44,7 @@ kernel_configure_variable() {
 	fi
 }
 
-do_configure_prepend() {
+do_configure_prepend__() {
 	# Clean .config
 	echo "" > ${S}/.config
 	CONF_SED_SCRIPT=""

@@ -9,7 +9,7 @@ SECTION = "net"
 
 DEPENDS = "libpcre gzip openssl readline luajit"
 
-PR = "r1"
+PR = "r6"
 
 SRC_URI = " \
         https://openresty.org/download/openresty-${PV}.tar.gz \
@@ -24,7 +24,6 @@ SRC_URI = " \
         git://github.com/vozlt/nginx-module-sts.git;protocol=https;rev=master;destsuffix=modules/nginx-module-sts \
         git://github.com/vozlt/nginx-module-vts.git;protocol=https;rev=master;destsuffix=modules/nginx-module-vts \
         git://github.com/arut/nginx-rtmp-module.git;protocol=https;rev=master;destsuffix=modules/nginx-rtmp-module \
-        git://github.com/openresty/stream-lua-nginx-module.git;protocol=https;rev=a3a050bfacfb8d097ee276380c4e606031f2aaf2;destsuffix=modules/stream-lua-nginx-module \
 "
 
 inherit update-rc.d useradd
@@ -58,6 +57,11 @@ do_configure () {
 	else
 		PTRSIZE=4
 	fi
+        if ${@bb.utils.contains('DISTRO_FEATURES', 'largefile', 'true', 'false', d)}; then
+                OFFTSIZE=8
+        else
+                OFFTSIZE=${PTRSIZE}
+        fi
 
 	echo CFLAGS: $CFLAGS
 	echo LDFLAGS: $LDFLAGS
@@ -74,7 +78,7 @@ do_configure () {
             --with-ptr-size=${PTRSIZE} \
             --with-sig-atomic-t=${PTRSIZE} \
             --with-size-t=${PTRSIZE} \
-            --with-off-t=8 \
+            --with-off-t=${OFFTSIZE} \
             --with-time-t=${PTRSIZE} \
             --with-sys-nerr=132 \
             --with-cc="${CC} ${CFLAGS}" \
@@ -104,7 +108,6 @@ do_configure () {
             --add-dynamic-module=../../../modules/nginx-dav-ext-module \
             --add-dynamic-module=../../../modules/nginx-rtmp-module \
             --add-dynamic-module=../../../modules/nginx-module-vts \
-            --add-dynamic-module=../../../modules/stream-lua-nginx-module \
 	${EXTRA_OECONF}
             # --add-dynamic-module=../../../modules/nginx-module-sts \
             # --add-dynamic-module=../../../modules/nginx-module-stream-sts \

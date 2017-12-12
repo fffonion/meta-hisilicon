@@ -5,7 +5,7 @@ SECTION = "console/network"
 PRIORITY = "optional"
 LICENSE = "GPL"
 DEPENDS = "c-ares expat zlib gnutls nettle"
-PR = "r0"
+PR = "r3"
 
 SRC_URI = "https://github.com/aria2/aria2/releases/download/release-${PV}/aria2-${PV}.tar.gz"
 
@@ -27,12 +27,12 @@ do_configure() {
 do_compile() {
 	cd ${S}
 	gettextize -f
-        oe_runmake CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}"
+        oe_runmake CFLAGS="${CFLAGS}" LDFLAGS="${LDFLAGS}" 
 }
 
 do_install() {
         mkdir -p ${D}/${bindir}
         install -m 0755 ${S}/src/aria2c ${D}/${bindir}
 }
-SRC_URI[md5sum] = "e6155852b035c641e6ef9cb6a414c5e1"
-SRC_URI[sha256sum] = "f19311aaea414e31dc6edf641bdc43a173f9e4b0e3bae88fe80c0d62485c8abd"
+SRC_URI[md5sum] = "c1528d15c6e6ef2b280565e895b4421f"
+SRC_URI[sha256sum] = "59fb7cadbce11a9511ccff28a9ec6ab58df2be8d0b5021cdb606a56e6289de34"

@@ -1,12 +1,14 @@
---- a/configure	2016-05-17 22:47:03.000000000 +0000
-+++ b/configure	2016-05-20 08:58:55.851600049 +0000
-@@ -69,25 +69,25 @@
+--- a/configure	2017-10-27 14:33:59.325740498 -0400
++++ b/configure	2017-10-27 14:56:04.241006274 -0400
+@@ -68,28 +68,28 @@
+ 
+ my @modules = (
      [ndk => 'ngx_devel_kit'],
 -    [http_iconv => 'iconv-nginx-module', 'disabled'],
 -    [http_echo => 'echo-nginx-module'],
 -    [http_xss => 'xss-nginx-module'],
 +    [http_iconv => 'iconv-nginx-module', 'dynamic'],
-+    [http_echo => 'echo-nginx-module'],
++    [http_echo => 'echo-nginx-module', 'dynamic'],
 +    [http_xss => 'xss-nginx-module', 'dynamic'],
      [http_coolkit => 'ngx_coolkit'],
 -    [http_set_misc => 'set-misc-nginx-module'],
@@ -36,21 +38,23 @@
      #[http_auth_request => 'auth-request-nginx-module'],
 -    [http_rds_json => 'rds-json-nginx-module'],
 -    [http_rds_csv => 'rds-csv-nginx-module'],
-+    [http_rds_json => 'rds-json-nginx-module', 'dynamic'],
-+    [http_rds_csv => 'rds-csv-nginx-module', 'dynamic'],
+-    [stream_lua => 'ngx_stream_lua'],
++    [http_rds_json => 'rds-json-nginx-module', 'disabled'],
++    [http_rds_csv => 'rds-csv-nginx-module', 'disabled'],
++    [stream_lua => 'ngx_stream_lua', 'dynamic'],
  );
  
  my $without_resty_mods_regex;
-@@ -995,7 +995,11 @@
+@@ -1093,7 +1093,11 @@
  
          my $dir = auto_complete "../$prefix";
  
 -        $opts_line .= " \\\n  --add-module=$dir";
-+	if ($attr eq 'dynamic') {
-+	    $opts_line .= " \\\n  --add-dynamic-module=$dir";
-+	} else { 
++        if ($attr eq 'dynamic') {
++            $opts_line .= " \\\n  --add-dynamic-module=$dir";
++        } else {
 +            $opts_line .= " \\\n  --add-module=$dir";
-+	}
++        }
      }
  
      return $opts_line;

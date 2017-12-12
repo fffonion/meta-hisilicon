@@ -2,7 +2,7 @@ DESCRIPTION = "libev port of shadowsocks"
 SECTION = "console/network"
 PRIORITY = "optional"
 LICENSE = "GPL"
-DEPENDS = "mbedtls udns libev libsodium"
+DEPENDS = "c-ares mbedtls libev libsodium"
 PR = "r0"
 
 SRC_URI = "gitsm://github.com/shadowsocks/shadowsocks-libev.git;protocol=https;tag=v${PV}"
